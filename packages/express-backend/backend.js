@@ -4,6 +4,8 @@ import express from "express";
 const app = express();
 const port = 8000;
 
+app.use(express.json());
+
 const users = {
   users_list: [
     {
@@ -44,7 +46,10 @@ const findUserByName = (name) => {
 const findUserById = (id) =>
   users["users_list"].find((user) => user["id"] === id);
 
-app.use(express.json());
+const addUser = (user) => {
+  users["users_list"].push(user);
+  return user;
+};
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -69,6 +74,12 @@ app.get("/users/:id", (req, res) => {
   } else {
     res.send(result);
   }
+});
+
+app.post("/users", (req, res) => {
+  const userToAdd = req.body;
+  addUser(userToAdd);
+  res.send();
 });
 
 app.listen(port, () => {
