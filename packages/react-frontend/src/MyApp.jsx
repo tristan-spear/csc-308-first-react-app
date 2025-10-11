@@ -13,29 +13,45 @@ function MyApp() {
     setCharacters(updated);
   }
 
-  function updateList(person) {
-    setCharacters([...characters, person]);
-  }
+  function updateList(person) { 
+    postUser(person)
+      .then(() => setCharacters([...characters, person]))
+      .catch((error) => {
+        console.log(error);
+      })
+}
 
   function fetchUsers() {
     const promise = fetch("http://localhost:8000/users");
     return promise;
   }
 
- useEffect(() => {
-  fetchUsers()
-    .then((res) => {
-      console.log("Response status:", res.status);
-      return res.json();
-    })
-    .then((json) => {
-      console.log("Fetched data from backend:", json);
-      setCharacters(json["users_list"] || json); // handles both array or object formats
-    })
-    .catch((error) => {
-      console.error("Error fetching users:", error);
+  useEffect(() => {
+    fetchUsers()
+      .then((res) => {
+        console.log("Response status:", res.status);
+        return res.json();
+      })
+      .then((json) => {
+        console.log("Fetched data from backend:", json);
+        setCharacters(json["users_list"] || json); // handles both array or object formats
+      })
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+      });
+    }, []);
+
+    function postUser(person) {
+    const promise = fetch("Http://localhost:8000/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(person),
     });
-}, []);
+
+    return promise;
+  }
 
   return (
     <div className="container">
