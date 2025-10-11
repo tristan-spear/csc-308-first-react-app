@@ -1,9 +1,11 @@
 // backend.js
 import express from "express";
+import cors from "cors";
 
 const app = express();
 const port = 8000;
 
+app.use(cors());
 app.use(express.json());
 
 const users = {
@@ -76,7 +78,7 @@ app.get("/users", (req, res) => {
     result = { users_list: result };
     res.send(result);
   } else {
-    res.send(users);
+   res.send(users.users_list);
   }
 });
 
