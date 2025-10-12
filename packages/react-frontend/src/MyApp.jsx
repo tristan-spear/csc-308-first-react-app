@@ -6,20 +6,26 @@ import Form from "./Form";
 function MyApp() {
   const [characters, setCharacters] = useState([]);
 
-  function removeOneCharacter(index) {
-    const updated = characters.filter((character, i) => {
-      return i !== index;
-    });
-    setCharacters(updated);
+  // function removeOneCharacter(index) {
+  //   const updated = characters.filter((character, i) => {
+  //     return i !== index;
+  //   });
+  //   setCharacters(updated);
+  // }
+
+  function updateList(person) {
+    postUser(person)
+      .then((newUser) => setCharacters((prev) => [...prev, newUser]))
+      .catch((error) => console.error("Error adding user:", error));
   }
 
-  function updateList(person) { 
-    postUser(person)
+  function remove(person) {
+    deleteUser(person)
       .then(() => setCharacters([...characters, person]))
       .catch((error) => {
         console.log(error);
-      })
-}
+      });
+  }
 
   function fetchUsers() {
     const promise = fetch("http://localhost:8000/users");
@@ -41,17 +47,34 @@ function MyApp() {
       });
     }, []);
 
-    function postUser(person) {
-    const promise = fetch("Http://localhost:8000/users", {
+  function postUser(person) {
+    return fetch("http://localhost:8000/users", {  // lowercase 'http'
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(person),
-    });
-
-    return promise;
+    }).then((res) => res.json());
   }
+
+    function removeOneCharacter(id) {
+      fetch(`http://localhost:8000/users/${id}`, {
+        method: "DELETE",
+      })
+        .then((response) => {
+          if (response.status === 204) {
+            // Successful deletion — update state
+            setCharacters((prev) => prev.filter((character) => character._id !== id && character.id !== id));
+          } else if (response.status === 404) {
+            console.error("User not found (nothing deleted)");
+          } else {
+            console.error("Failed to delete user. Status:", response.status);
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting user:", error);
+        });
+    }
 
   return (
     <div className="container">

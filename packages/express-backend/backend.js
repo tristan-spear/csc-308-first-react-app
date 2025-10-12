@@ -55,7 +55,7 @@ const addUser = (user) => {
 
 const removeUserById = (id) => {
     return users.users_list.filter(
-        (user) => user.id !== id
+        (user) => user.id != id
     );
 }
 
@@ -63,6 +63,11 @@ const findUserByJob = (userArr, job) => {
     return userArr.filter(
         (user) => user.job === job
     );
+}
+
+function generateId() {
+  const id = Math.floor(Math.random() * 1000000);
+  return id;
 }
 
 // hello world / home
@@ -96,8 +101,9 @@ app.get("/users/:id", (req, res) => {
 // add user
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
+  userToAdd.id = generateId();
   addUser(userToAdd);
-  res.send();
+  res.status(201).send(userToAdd);
 });
 
 // delete user by id
@@ -108,7 +114,7 @@ app.delete("/users/:id", (req, res) => {
     if (users.users_list.length === initialLength) {
         res.status(404).send("Resource not found.");
     } else {
-        res.status(200).send("User deleted successfully.");
+        res.status(204).send();
     }
 });
 
