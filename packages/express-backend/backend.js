@@ -2,103 +2,128 @@
 import express from "express";
 import cors from "cors";
 
+import userService from "./models/user-service";
+
 const app = express();
 const port = 8000;
 
 app.use(cors());
 app.use(express.json());
 
-const users = {
-  users_list: [
-    {
-      id: "xyz789",
-      name: "Charlie",
-      job: "Janitor"
-    },
-    {
-      id: "abc123",
-      name: "Mac",
-      job: "Bouncer"
-    },
-    {
-      id: "ppp222",
-      name: "Mac",
-      job: "Professor"
-    },
-    {
-      id: "yat999",
-      name: "Dee",
-      job: "Aspring actress"
-    },
-    {
-      id: "zap555",
-      name: "Dennis",
-      job: "Bartender"
-    }
-  ]
-};
+// const users = {
+//   users_list: [
+//     {
+//       id: "xyz789",
+//       name: "Charlie",
+//       job: "Janitor"
+//     },
+//     {
+//       id: "abc123",
+//       name: "Mac",
+//       job: "Bouncer"
+//     },
+//     {
+//       id: "ppp222",
+//       name: "Mac",
+//       job: "Professor"
+//     },
+//     {
+//       id: "yat999",
+//       name: "Dee",
+//       job: "Aspring actress"
+//     },
+//     {
+//       id: "zap555",
+//       name: "Dennis",
+//       job: "Bartender"
+//     }
+//   ]
+// };
 
-// helper functions
-const findUserByName = (name) => {
-  return users["users_list"].filter(
-    (user) => user.name === name
-  );
-};
+// // helper functions
+// const findUserByName = (name) => {
+//   return users["users_list"].filter(
+//     (user) => user.name === name
+//   );
+// };
 
-const findUserById = (id) =>
-  users["users_list"].find((user) => user["id"] === id);
 
-const addUser = (user) => {
-  users["users_list"].push(user);
-  return user;
-};
+// const findUserById = (id) =>
+//   users["users_list"].find((user) => user["id"] === id);
 
-const removeUserById = (id) => {
-    return users.users_list.filter(
-        (user) => user.id != id
-    );
-}
+// const addUser = (user) => {
+//   users["users_list"].push(user);
+//   return user;
+// };
 
-const findUserByJob = (userArr, job) => {
-    return userArr.filter(
-        (user) => user.job === job
-    );
-}
+// const removeUserById = (id) => {
+//     return users.users_list.filter(
+//         (user) => user.id != id
+//     );
+// }
 
-function generateId() {
-  const id = Math.floor(Math.random() * 1000000);
-  return id;
-}
+// const findUserByJob = (userArr, job) => {
+//     return userArr.filter(
+//         (user) => user.job === job
+//     );
+// }
 
-// hello world / home
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+// function generateId() {
+//   const id = Math.floor(Math.random() * 1000000);
+//   return id;
+// }
+
+// // hello world / home
+// app.get("/", (req, res) => {
+//   res.send("Hello World!");
+// });
 
 // get all users
-app.get("/users", (req, res) => {
+app.get("/users", async (req, res) => {
+  // const name = req.query.name;
+  // if (name != undefined) {
+  //   let result = findUserByName(name);
+  //   result = { users_list: result };
+  //   res.send(result);
+  // } else {
+  //  res.send(users.users_list);
+  // }
+
   const name = req.query.name;
-  if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-   res.send(users.users_list);
+  const job = req.query.job;
+  try {
+    const users = await userService.getUsers(name, job);
+    res.send({ user_list : users});
   }
+  catch(err) {
+    console.error(err);
+    res.status(500).send("An error occurred in the server.");
+  }
+  
 });
 
 // get user by id
 app.get("/users/:id", (req, res) => {
+  // const id = req.params.id;
+  // let result = findUserById(id);
+  // if (result === undefined) {
+  //   res.status(404).send("Resource not found.");
+  // } else {
+  //   res.send(result);
+  // }
+
   const id = req.params.id;
-  let result = findUserById(id);
-  if (result === undefined) {
-    res.status(404).send("Resource not found.");
-  } else {
-    res.send(result);
+  try {
+    const user = await userService.finderUserById(id);
+    res.send({ searchUser : user});
+  }
+  catch(err) {
+    console.error(err);
+    res.status(500).send("An error occurred in the server.");
   }
 });
 
-// add user
+add user
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
   userToAdd.id = generateId();
