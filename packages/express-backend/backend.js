@@ -92,8 +92,8 @@ app.get("/users", async (req, res) => {
   const name = req.query.name;
   const job = req.query.job;
   try {
-    const users = await userService.getUsers(name, job);
-    res.send({ user_list : users});
+    const result = await userService.getUsers(name, job);
+    res.send({ user_list : result});
   }
   catch(err) {
     console.error(err);
@@ -103,7 +103,7 @@ app.get("/users", async (req, res) => {
 });
 
 // get user by id
-app.get("/users/:id", (req, res) => {
+app.get("/users/:id", async (req, res) => {
   // const id = req.params.id;
   // let result = findUserById(id);
   // if (result === undefined) {
@@ -113,23 +113,24 @@ app.get("/users/:id", (req, res) => {
   // }
 
   const id = req.params.id;
-  try {
-    const user = await userService.finderUserById(id);
-    res.send({ searchUser : user});
-  }
-  catch(err) {
-    console.error(err);
-    res.status(500).send("An error occurred in the server.");
-  }
+  const result = await userService.findUserById(id);
+  
+  if(result === undefined || result === null)
+      res.status(404).send("Resource not found.");
+  else
+    res.send({ searchUser : result});
 });
 
-add user
-app.post("/users", (req, res) => {
-  const userToAdd = req.body;
-  userToAdd.id = generateId();
-  addUser(userToAdd);
-  res.status(201).send(userToAdd);
+//add user
+app.post("/users", async (req, res) => {
+  const user = req.body;
+  const savedUser = await userServices.addUser(user);
+  if (savedUser)
+    res.status(201).send(savedUser);
+  else
+    res.status(500).end();
 });
+
 
 // delete user by id
 app.delete("/users/:id", (req, res) => {
