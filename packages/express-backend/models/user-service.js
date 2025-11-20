@@ -1,19 +1,22 @@
 import mongoose from "mongoose";
-import userModel from "./user";
+import userModel from "./user.js";
 
 mongoose.set("debug", true);
 
-mongoose
+if (mongoose.connection.readyState === 0) {
+await mongoose
   .connect("mongodb://localhost:27017/users", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
   .catch((error) => console.log(error));
+}
 
-function getUsers(name, job) {
+async function getUsers(name, job) {
   let promise;
   if (name === undefined && job === undefined) {
-    promise = userModel.find();
+    promise = await userModel.find();
+    console.log(promise != null);
   } else if (name && !job) {
     promise = findUserByName(name);
   } else if (job && !name) {
@@ -41,7 +44,8 @@ function findUserByJob(job) {
 }
 
 function deleteUserById(id) {
-  return userModel.deleteOne({_id : id});
+  const promise = userModel.findByIdAndDelete(id);
+  return promise;
 }
 
 export default {
@@ -50,4 +54,5 @@ export default {
   findUserById,
   findUserByName,
   findUserByJob,
+  deleteUserById
 };

@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 
-import userService from "./models/user-service";
+import userService from "./models/user-service.js";
 
 const app = express();
 const port = 8000;
@@ -124,36 +124,53 @@ app.get("/users/:id", async (req, res) => {
 //add user
 app.post("/users", async (req, res) => {
   const user = req.body;
-  const savedUser = await userServices.addUser(user);
-  if (savedUser)
+  const savedUser = await userService.addUser(user);
+  if (savedUser){
+    console.log("WTF");
     res.status(201).send(savedUser);
+  }
   else
     res.status(500).end();
 });
 
 
 // delete user by id
-app.delete("/users/:id", (req, res) => {
-    const id = req.params.id;
-    const initialLength = users.users_list.length;
-    users.users_list = removeUserById(id);
-    if (users.users_list.length === initialLength) {
-        res.status(404).send("Resource not found.");
-    } else {
-        res.status(204).send();
-    }
+app.delete("/users/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const deletedUser = await userService.deleteUserById(id);
+
+  if(deletedUser)
+      res.status(204).send();
+  else
+    res.status(404).send("Resource not found.");
+}
+  catch(error) {
+      if (error.name === "CastError") return res.status(400).send("Invalid ID");
+      console.log(error);
+      return res.status(500).send("Server error");
+  };
 });
 
 // get users by name and job
-app.get("/users/:name/:job", (req, res) => {
+app.get("/users/:name/:job", async (req, res) => {
   const name = req.params.name;
   const job = req.params.job;
-  let result = findUserByName(name);
-  let finalResult = findUserByJob(result, job);
-  if (finalResult === undefined) {
-    res.status(404).send("Resource not found.");
-  } else {
-    res.send(finalResult);
+  // let result = findUserByName(name);
+  // let finalResult = findUserByJob(result, job);
+  // if (finalResult === undefined) {
+  //   res.status(404).send("Resource not found.");
+  // } else {
+  //   res.send(finalResult);
+  // }
+
+  try {
+    const result = await userService.getUsers(name, job);
+    res.send({ user_list : result});
+  }
+  catch(err) {
+    console.error(err);
+    res.status(500).send("An error occurred in the server.");
   }
 });
 

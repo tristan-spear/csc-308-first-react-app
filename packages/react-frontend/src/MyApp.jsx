@@ -27,8 +27,8 @@ function MyApp() {
       });
   }
 
-  function fetchUsers() {
-    const promise = fetch("http://localhost:8000/users");
+  async function fetchUsers() {
+    const promise = await fetch("http://localhost:8000/users");
     return promise;
   }
 
@@ -40,7 +40,7 @@ function MyApp() {
       })
       .then((json) => {
         console.log("Fetched data from backend:", json);
-        setCharacters(json["users_list"] || json); // handles both array or object formats
+        setCharacters(json["user_list"] || json); // handles both array or object formats
       })
       .catch((error) => {
         console.error("Error fetching users:", error);
